@@ -81,5 +81,5 @@ app.delete('/tasks/:task_id/delete', async (res,req) => {
 })
 
 app.listen(8080, ()=> {
-    console.log('Server is listening on port 8080 http://localhost:8080/')
+    console.log('Server is listening')
 })
