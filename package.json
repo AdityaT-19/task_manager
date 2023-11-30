@@ -5,8 +5,7 @@
   "description": "backend for task manager app",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "dev": "node --watch app.js"
+    "start": "node app.js"
   },
   "author": "AdityaT-19",
   "license": "ISC",
