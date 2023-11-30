@@ -5,6 +5,7 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const pool = mysql.createPool({
+	port: process.env.MYSQL_PORT,	
     host: process.env.MYSQL_HOST,
     user: process.env.MYSQL_USER,
     password: process.env.MYSQL_PASSWORD,
@@ -15,8 +16,8 @@ const pool = mysql.createPool({
 export const allTasksByUser =  async (id) =>{
 	const [tasks] = await pool.execute(`
 		SELECT task_id, tname, comptime, completed, created_at, content, priority 
-		FROM TASK 
-		JOIN USER ON TASK.USER_ID = USER.ID
+		FROM task 
+		JOIN USER ON task.USER_ID = USER.ID
 		WHERE USER.ID = (?)	
 	`,[id])
 	return tasks
@@ -60,16 +61,16 @@ export const allTasksByUserFiltered =  async (id,tags) =>{
 	let ques = tags.map((tag)=>'?').join(',')
 	try{
 	const [tasksid] = await pool.execute(`
-		SELECT TASK.TASK_ID 
-		FROM TASK
-		JOIN TAGS ON TASK.TASK_ID = TAGS.TASK_ID
+		SELECT task.TASK_ID 
+		FROM task
+		JOIN TAGS ON task.TASK_ID = TAGS.TASK_ID
 		WHERE user_id = (?)	AND TAGS.TAG_NAME IN ((${ques}))
 	`,[id,...tags])
 	const ids = tasksid.map((task)=>task.TASK_ID)
 	const ques2 = ids.map((id)=>'?').join(',')
 	const [tasks] = await pool.execute(`
 		SELECT task_id, tname, comptime, completed, created_at, content, priority 
-		FROM TASK 
+		FROM task 
 		WHERE TASK_ID IN (${ques2})
 		`,ids)
 		return tasks
@@ -82,7 +83,7 @@ export const allTasksByUserFiltered =  async (id,tags) =>{
 
 export const completeTask =  async (id) =>{
 	const [tasks] = await pool.execute(`
-		UPDATE TASK
+		UPDATE task
 		SET COMPLETED = 1
 		WHERE TASK_ID = (?)
 	`,[id])
@@ -91,7 +92,7 @@ export const completeTask =  async (id) =>{
 
 export const uncompleteTask =  async (task_id) => {
 	const [tasks] = await pool.execute(`
-		UPDATE TASK
+		UPDATE task
 		SET COMPLETED = 0
 		WHERE TASK_ID = (?)
 	`,[task_id])
@@ -107,7 +108,7 @@ export const createTask =  async (id,task,tags) => {
 		let taglist = []
 		await Promise.all(tags = tags.map(async (tag) => {
 			taglist.push( await pool.execute(`
-				INSERT INTO tags (task_id, tag_name) VALUES 
+				INSERT INTO TAGS (task_id, tag_name) VALUES 
 				(?, ?)
 			`,[tasks.insertId,tag])
 				
@@ -117,7 +118,7 @@ export const createTask =  async (id,task,tags) => {
 	}
 	const [createdTask] = await pool.execute(`
 	SELECT task_id, tname, comptime, completed, created_at, content, priority 
-	FROM TASK 
+	FROM task 
 	WHERE TASK_ID = (?)
 	`,[tasks.insertId])
 	return createdTask
@@ -125,7 +126,7 @@ export const createTask =  async (id,task,tags) => {
 
 export const updateCompTime = async (id,comptime) => {
 	const [tasks] = await pool.execute(`
-		UPDATE TASK
+		UPDATE task
 		SET COMPTIME = (?)
 		WHERE TASK_ID = (?)
 	`,[comptime,id])
@@ -134,7 +135,7 @@ export const updateCompTime = async (id,comptime) => {
 
 export const deleteTask =  async (id) =>{
 	const [tasks] = await pool.execute(`
-		DELETE FROM TASK
+		DELETE FROM task
 		WHERE TASK_ID = (?)
 	`,[id])
 	return tasks
